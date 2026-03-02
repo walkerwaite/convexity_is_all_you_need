@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Surpress tensorflow cuda errors
+os.environ['GIT_PYTHON_REFRESH'] = 'quiet' # Suppress git import errors
 
 import warnings
 # Surpress lightning-bolt warnings https://github.com/Lightning-Universe/lightning-bolts/issues/563
