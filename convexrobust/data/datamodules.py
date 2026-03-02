@@ -234,7 +234,7 @@ class NormalizeLayer(torch.nn.Module):
     def forward(self, input: torch.Tensor):
         # Had to do some janky adjusting to make work with ab-crown
         new_normalized = F.batch_norm(
-            input, self.means.data, self.vars.data, momentum=1.0, eps=0.0,
+            input, self.means.data, self.vars.data, momentum=1.0, eps=1e-5,
             weight=self.weight, bias=self.bias
         )
 
