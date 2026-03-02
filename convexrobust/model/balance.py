@@ -74,7 +74,7 @@ def direct_balance(model: BaseCertifiable, datamodule: LightningDataModule) -> N
     class_0_acc, class_1_acc = _compute_class_accuracies(TU.make_single_logit_hard(pred), target)
     print(f'(Original) class 0 acc: {class_0_acc}, class 1 acc: {class_1_acc}')
 
-    fpr, tpr, thresholds = metrics.roc_curve(TU.numpy(target), TU.logit_sign() * TU.numpy(pred))
+    fpr, tpr, thresholds = metrics.roc_curve(TU.numpy(target), TU.logit_sign(pred) * TU.numpy(pred))
     # Optimize such that class accuracies are balanced
     threshold = thresholds[np.argmin(abs(tpr - (1 - fpr)))]
     class_0_acc, class_1_acc = _compute_class_accuracies(
