@@ -63,12 +63,25 @@ def _train_model(
     )
 
     file_utils.create_empty_directory(checkpoint_dir)
-    checkpoint = ModelCheckpoint(checkpoint_dir, filename='model', monitor='val_loss')
+    
+    # Best model checkpoint (based on validation loss)
+    checkpoint_best = ModelCheckpoint(
+        checkpoint_dir, filename='model', monitor='val_loss', 
+        save_top_k=1, mode='min'
+    )
+    
+    # Periodic checkpoints every 10 epochs
+    checkpoint_periodic = ModelCheckpoint(
+        checkpoint_dir, filename='model-epoch{epoch:02d}', 
+        every_n_epochs=10, save_top_k=-1
+    )
+    
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
 
     trainer = pl.Trainer(
         max_epochs=blueprint.epochs, logger=logger, gpus=TU.gpu_n(),
-        num_sanity_val_steps=0, callbacks=[checkpoint, lr_monitor]
+        num_sanity_val_steps=0, callbacks=[checkpoint_best, checkpoint_periodic, lr_monitor],
+        gradient_clip_val=1.0, gradient_clip_algorithm='norm'
     )
     trainer.fit(model, datamodule)
 

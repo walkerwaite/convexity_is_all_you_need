@@ -175,6 +175,11 @@ class BaseCertifiable(pl.LightningModule):
         with torch.no_grad():
             vars = self.compute_step_variables(batch)
             self.log('val_loss', vars['loss']) # For model checkpointing
+            
+            # Alert if validation loss is problematic
+            if torch.isnan(vars['loss']) or torch.isinf(vars['loss']):
+                print(f"\n⚠️ VALIDATION: Loss is {'NaN' if torch.isnan(vars['loss']) else 'Inf'} at epoch {self.current_epoch}")
+            
             return vars
 
     def compute_step_variables(self, batch: tuple[Tensor, Tensor]) -> dict:
@@ -217,6 +222,15 @@ class BaseCertifiable(pl.LightningModule):
         vars['stability_loss'] = stability_loss.detach()
         vars['extra_loss'] = extra_loss.detach()
         vars['loss'] = classification_loss + extra_loss + stability_loss
+        
+        # Validate loss for NaN/Inf
+        if torch.isnan(vars['loss']) or torch.isinf(vars['loss']):
+            print(f"\n⚠️ WARNING: Loss is {'NaN' if torch.isnan(vars['loss']) else 'Inf'} at epoch {self.current_epoch}")
+            print(f"  Classification loss: {classification_loss.item()}")
+            print(f"  Extra loss: {extra_loss.item()}")
+            print(f"  Stability loss: {stability_loss.item()}")
+            print(f"  Pred range: [{pred.min().item():.4f}, {pred.max().item():.4f}]")
+            # Continue training but alert user - don't abort as model may recover
 
         return vars
 
